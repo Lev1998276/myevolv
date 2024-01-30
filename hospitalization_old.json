@@ -1,0 +1,96 @@
+{
+  "AutomationKey": "tx_hx_hosp",
+  "FormMode": "ADD",
+  "KeyValue": null,
+  "FormLines": [
+    {
+      "Caption": "AutomationKey",
+      "value": "tx_hx_hosp"
+    },
+    {
+      "Caption": "FormMode",
+      "value": "ADD"
+    },
+    {
+      "Caption": "KeyValue",
+      "value": ""
+    },
+    {
+      "Caption": "Link to Person",
+      "value": "10033814"
+    },
+    {
+      "Caption": "Treatment History",
+      "value": "Inpatient"
+    },
+    {
+      "Caption": "Admission Date",
+      "value": "2023-11-14 2:35 PM"
+    },
+    {
+      "Caption": "Discharge Date",
+      "value": ""
+    },
+    {
+      "Caption": "Facility Name",
+      "value": "New York Presbyterian - Milstein"
+    },
+    {
+      "Caption": "Source",
+      "value": "CAREPORT"
+    },
+    {
+      "Caption": "Type",
+      "value": ""
+    },
+    {
+      "Caption": "Agency",
+      "value": ""
+    },
+    {
+      "Caption": "AutomationKey",
+      "value": "tx_hx_hosp"
+    },
+    {
+      "Caption": "FormMode",
+      "value": "ADD"
+    },
+    {
+      "Caption": "KeyValue",
+      "value": ""
+    },
+    {
+      "Caption": "Link to Person",
+      "value": "10033814"
+    },
+    {
+      "Caption": "Treatment History",
+      "value": "Inpatient"
+    },
+    {
+      "Caption": "Admission Date",
+      "value": "2023-11-13 10:11 AM"
+    },
+    {
+      "Caption": "Discharge Date",
+      "value": ""
+    },
+    {
+      "Caption": "Facility Name",
+      "value": "New York Presbyterian - Milstein"
+    },
+    {
+      "Caption": "Source",
+      "value": "CAREPORT"
+    },
+    {
+      "Caption": "Type",
+      "value": ""
+    },
+    {
+      "Caption": "Agency",
+      "value": ""
+    }
+  ],
+  "SubData": []
+}
