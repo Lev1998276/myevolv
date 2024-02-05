@@ -1,0 +1,4 @@
+AutomationKey,FormMode,KeyValue,Link to Person,Treatment History,Admission Date,Discharge Date,Facility Name,Source,Type,Agency
+tx_hx_hosp,ADD,10033814,10033814,Inpatient,2023-11-14 2:35 PM,,New York Presbyterian - Milstein,CAREPORT,,
+tx_hx_hosp,ADD,10033814,10033814,Inpatient,2023-11-13 10:11 AM,,New York Presbyterian - Milstein,CAREPORT,,
+tx_hx_hosp,ADD,10033815,10033815,Inpatient,2023-11-22 10:11 AM,,New York Presbyterian - Milstein,CAREPORT,,
