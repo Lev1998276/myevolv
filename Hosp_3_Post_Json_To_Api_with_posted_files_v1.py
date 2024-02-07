@@ -53,6 +53,7 @@ def post_jsonfile_to_api(target_api_url, access_token, json_file):
     }
     #print(headers)
     response = requests.post(target_api_url, headers=headers, json=json_file)
+    
     print(str(response.text))
     if response.status_code == 200:
        # Parse the JSON string
@@ -68,7 +69,6 @@ def post_jsonfile_to_api(target_api_url, access_token, json_file):
        is_success = response_dict["IsSuccess"]
        print(f"Response from API is_success : {is_success}")
        return is_success
-
     
     
 def write_to_log(log_file, message):
@@ -100,46 +100,75 @@ if __name__ == "__main__":
     print(f'json_file_path : {json_file_path}')
     print("\n")
     
+    
+    
+    # NOTE THIS WILL BE CREATED AT THE START OF THE PROGRAM
+    os.system('touch posted_records.txt')
+    posted_records_file = "posted_records.txt"
+    
+    posted_records = set()
+    try:
+        if os.path.exists(posted_records_file):
+            with open(posted_records_file, "r") as file:
+                lines = file.readlines()
+                for each in lines:
+                    posted_records.update(each)
+        else:
+            print(f"File {posted_records_file} doesn't exists") 
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+       
     #Get the list of all json files that need to be posted
     json_files = [file for file in os.listdir(json_file_path) if file.endswith('.json')]
     
     for eachFile in json_files:
         print(f"\nFile {eachFile} is in progress to be posted")
         full_file_path = os.path.join(json_file_path, eachFile)
-        with open(full_file_path, 'r') as file:
-           json_data = json.load(file)
-           access_token = get_access_token(api_auth_url,api_loginname,api_password)
-           start_time = time.time()
- 
-           # Post the current file with the current access token
-           success = post_jsonfile_to_api(api_target_url, access_token, json_data)
-           elapsed_time = time.time() - start_time
-           print(f"Success : {success}")
-        
-           elapsed_time = time.time() - start_time
-           print(f"elapsed_time : {elapsed_time}")
-           # Check if the file was transferred within 55 seconds
-           if elapsed_time > 55:
-                print(f"Elapsed_time {elapsed_time} : Token expired or file not transferred within 60 seconds. Regenerating token\n")
-                time.sleep(60)
-                
-                # Regenerate token
+        if eachFile not in posted_records:
+            with open(full_file_path, 'r') as file:
+                json_data = json.load(file)
                 access_token = get_access_token(api_auth_url,api_loginname,api_password)
-                print("Token regenerated...")
+                start_time = time.time()
                 
-                # Attempt to repost the file
-                success = post_jsonfile_to_api(api_target_url, access_token, eachFile)
+                # Post the current file with the current access token
+                success = post_jsonfile_to_api(api_target_url, access_token, json_data)
+                elapsed_time = time.time() - start_time
+                print(f"Success : {success}")
                 
-                if not success:
-                    print(f"File {eachFile} not transferred even after token regeneration.")
-                    #write_to_log(log_file, f"Failed to transfer file: {eachFile}")
+                
+                elapsed_time = time.time() - start_time
+                print(f"elapsed_time : {elapsed_time}")
+                # Check if the file was transferred within 55 seconds
+                if elapsed_time > 55:
+                    print(f"Elapsed_time {elapsed_time} : Token expired or file not transferred within 60 seconds. Regenerating token\n")
+                    time.sleep(60)
+                    
+                    # Regenerate token
+                    access_token = get_access_token(api_auth_url,api_loginname,api_password)
+                    print("Token regenerated...")
+                    
+                    # Attempt to repost the file
+                    success = post_jsonfile_to_api(api_target_url, access_token, json_data)
+                    
+                    if not success:
+                        print(f"File {eachFile} not transferred even after token regeneration.")
+                        #write_to_log(log_file, f"Failed to transfer file: {eachFile}")
+                    else:
+                        posted_records.add(eachFile)
+                        print(f"File {eachFile} not transferred even after token regeneration.\n")
+                        #write_to_log(log_file, f"Successfully transferred file: {eachFile}")
+                elif elapsed_time < 55 and success:
+                    posted_records.add(eachFile)
+                    print(f"File transferred within 60 seconds.")
                 else:
-                    print(f"File {eachFile} not transferred even after token regeneration.")
-                    #write_to_log(log_file, f"Successfully transferred file: {eachFile}")
-        
+                    print(f"File was not transferred and errored out with {success}")
+        else:
+             print("File as already processed")         
     
-     
-
+    
+    for eachrecord in posted_records:
+        print(f"{eachrecord} was successfully posted")
     
     
   
