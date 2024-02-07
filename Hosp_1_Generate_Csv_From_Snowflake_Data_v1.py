@@ -65,10 +65,9 @@ def get_json_data(conn):
     try:
         sf_cur = sf_conn.cursor()
         query = '''
-              
            SELECT 'tx_hx_hosp'     AS AutomationKey,
                    'ADD'            AS FormMode,
-                   D.sponsor_mrn     AS KeyValue,
+                   D.sponsor_mrn   AS KeyValue,
                    D.sponsor_mrn    AS "Link to Person",
                    CASE
                      WHEN Trim(Upper(D.facility_type)) = 'HHA' THEN 'Post Acute-Home Care'
@@ -84,9 +83,8 @@ def get_json_data(conn):
                      WHEN Trim(Upper(D.facility_type)) = 'HOSPITAL'
                           AND Trim(Upper(D.setting)) = 'INPATIENT' THEN 'Inpatient'
                    END              AS "Treatment History Type",
-                   D.status_date
-                   || ' '
-                   || D.status_time AS "Admission Date",
+                   visit_id as Key,
+                   TO_CHAR(D.status_date, 'MM/DD/YYYY')    || ' '  || D.status_time AS "Admission Date",
                    NULL             AS "Discharge Date",
                    D.facility       AS "Facility Name",
                    'CAREPORT'       AS SOURCE,
@@ -94,7 +92,7 @@ def get_json_data(conn):
                    NULL             AS Agency
             FROM   nexus.dw_owner.careport_daily_event D
             WHERE  D.sponsor_mrn = '10033814'
-                   AND Trim(Upper(D.status)) NOT IN ('DISCHARGED - CANCELLED', 'ADMITTED - CANCELLED', 'SETTING CHANGED - CANCELLED' );
+                   AND Trim(Upper(D.status)) NOT IN ('DISCHARGED - CANCELLED', 'ADMITTED - CANCELLED', 'SETTING CHANGED - CANCELLED' )
                     '''
         sf_cur.execute(query,)
         result = sf_cur.fetchall()
@@ -186,7 +184,7 @@ if __name__ == "__main__":
 
     #Writing query output to csv file 
     print("Writing query output to csv file \n")
-    header_row = ['AutomationKey','FormMode','KeyValue','Link to Person','Treatment History','Admission Date','Discharge Date','Facility Name','Source','Type','Agency']
+    header_row = ['AutomationKey','FormMode','KeyValue','Link to Person','Treatment History Type','Key','Admission Date','Discharge Date','Facility Name','Source','Type','Agency']
     write_tuples_to_csv(result, 'hospitalization.csv',header_row)
 
     # Reading the CSV data from the file to send it to json conversion
