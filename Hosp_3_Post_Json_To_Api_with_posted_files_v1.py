@@ -54,7 +54,7 @@ def post_jsonfile_to_api(target_api_url, access_token, json_file):
     #print(headers)
     response = requests.post(target_api_url, headers=headers, json=json_file)
     
-    print(str(response.text))
+    print(f"Response from API : {str(response.text)}")
     if response.status_code == 200:
        # Parse the JSON string
        response_dict = json.loads(str(response.text))
@@ -142,7 +142,7 @@ if __name__ == "__main__":
                 # Check if the file was transferred within 55 seconds
                 if elapsed_time > 55:
                     print(f"Elapsed_time {elapsed_time} : Token expired or file not transferred within 60 seconds. Regenerating token\n")
-                    time.sleep(60)
+                    time.sleep(30)
                     
                     # Regenerate token
                     access_token = get_access_token(api_auth_url,api_loginname,api_password)
