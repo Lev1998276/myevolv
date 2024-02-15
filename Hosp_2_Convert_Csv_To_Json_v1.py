@@ -18,9 +18,12 @@ s3_connectionProfile = CEDL_HOME + '/etc/.s3_connection_profile'
 
 
 def read_config(file_path='config.ini'):
-    config = configparser.ConfigParser()
-    config.read(file_path)
-    return config
+    try:
+        config = configparser.ConfigParser()
+        config.read(file_path)
+        return config
+    except Exception as e:
+        print(f"An error occurred while reading the configuration file: {e}")
 
 
 def read_csv_from_s3(bucket_name, file_key):
@@ -33,17 +36,20 @@ def read_csv_from_s3(bucket_name, file_key):
 
     # Read the CSV file and create a list of dictionaries
     csv_data = []
-    with open(local_file, 'r') as csv_file:
-        csv_reader = csv.reader(csv_file)
-        # Get the header from the first row
-        header = next(csv_reader)
-        # Iterate through rows and create dictionaries
-        for row in csv_reader:
-            row_dict = {header[i]: value for i, value in enumerate(row)}
-            csv_data.append(row_dict)
-    # Clean up - remove the local copy of the CSV file
-    os.remove(local_file)
-    return csv_data
+    try:
+        with open(local_file, 'r') as csv_file:
+            csv_reader = csv.reader(csv_file)
+            # Get the header from the first row
+            header = next(csv_reader)
+            # Iterate through rows and create dictionaries
+            for row in csv_reader:
+                row_dict = {header[i]: value for i, value in enumerate(row)}
+                csv_data.append(row_dict)
+        # Clean up - remove the local copy of the CSV file
+        os.remove(local_file)
+        return csv_data
+    except Exception as e:
+        print(f"An error occurred in the read_csv_from_s3 function: {e}")
 
 
 def convert_row_to_json(row):
@@ -106,7 +112,13 @@ if __name__ == "__main__":
         print(row)
 
     # Convert each csv record to JSON
-    json_list = [convert_row_to_json(record) for record in csv_data]
+    try:
+        json_list = [convert_row_to_json(record) for record in csv_data]
+        if not json_list:
+            raise ValueError("The JSON list is empty.")
+    except Exception as e:
+        print(f"An error occurred while processing CSV data: {e}")
+        
 
     # Print the resulting JSON list
     counter = 1  # Initialize a counter

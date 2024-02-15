@@ -22,10 +22,8 @@ def archive_files(source_dir, destination_dir):
         if not os.path.exists(destination_dir):
             os.makedirs(destination_dir)
 
-        # Get a list of all files in the source directory
         files = [f for f in os.listdir(source_dir) if os.path.isfile(os.path.join(source_dir, f))]
 
-        # Move each file to the destination directory with a timestamp
         for file_name in files:
             source_path = os.path.join(source_dir, file_name)
             
@@ -41,6 +39,21 @@ def archive_files(source_dir, destination_dir):
         print(f"All files archived from '{source_dir}' to '{destination_dir}' with timestamps.")
     except Exception as e:
         print(f"An error occurred: {str(e)}")
+        
+        
+def add_timestamps_to_files(folder_path, filename):
+    try:
+        current_time = datetime.now().strftime("%Y%m%d%H%M%S")
+        old_path = os.path.join(folder_path, filename)
+        file_name, file_extension = os.path.splitext(filename)
+        new_file_name = f"{current_time}_{file_name}{file_extension}"
+        new_path = os.path.join(folder_path, new_file_name)
+        os.rename(old_path, new_path)
+        print(f"Renamed: {filename} to {new_file_name}")
+
+    except Exception as e:
+        print(f"An error occurred for file {filename}: {e}")
+
 
 if __name__ == "__main__":
 
@@ -51,14 +64,23 @@ if __name__ == "__main__":
     csv_archive_file_path = config.get('Hospitalization', 'csv_archive_file_path')
     json_file_path = config.get('Hospitalization', 'json_file_path')
     json_archive_file_path = config.get('Hospitalization', 'json_archive_file_path')
+    error_file_path = config.get('Hospitalization', 'error_file')
+    log_file_path = config.get('Hospitalization', 'log_file')
+    posted_file_path = config.get('Hospitalization', 'posted_json') 
 
+    ##archive json files
     json_source_directory = json_file_path
     json_destination_directory = json_archive_file_path
-
     archive_files(json_source_directory, json_destination_directory)
-
+    
+    #archive csv  files
     csv_source_directory = csv_file_path
     csv_destination_directory = csv_archive_file_path
-
     archive_files(csv_source_directory, csv_destination_directory)
+    
+    #adding timestamps to posted , error and log files 
+    add_timestamps_to_files(error_file_path, 'error_records.txt')
+    add_timestamps_to_files(log_file_path, 'log_records.txt')
+    add_timestamps_to_files(posted_file_path,'posted_records.txt')
+    
 

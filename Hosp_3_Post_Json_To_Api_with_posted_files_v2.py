@@ -24,9 +24,11 @@ def get_access_token(api_url, loginname, password):
         content_type = response.headers.get('content-type')
         if 'application/json' in content_type:
             access_token = response.json().get('access_token')
+            write_to_log(log_record_file, f"get_access_token access_token  : {access_token}")
             return access_token
         elif 'text/plain' in content_type:
             text_response = response.text
+            write_to_log(log_record_file, f"get_access_token text_response  : {text_response}")
             return text_response  # Return the text_response here
         else:
             print(f"Unexpected content type: {content_type}. Unable to handle response.")
@@ -53,6 +55,7 @@ def post_jsonfile_to_api(target_api_url, access_token, json_file):
     }
     #print(headers)
     response = requests.post(target_api_url, headers=headers, json=json_file)
+    write_to_log(log_record_file, f"post_jsonfile_to_api Response status : {response.status_code}")
     
     print(f"Response from API : {str(response.text)}")
     if response.status_code == 200:
@@ -61,8 +64,10 @@ def post_jsonfile_to_api(target_api_url, access_token, json_file):
        # Extract the value of the "IsSuccess" key
        is_success = response_dict["IsSuccess"]
        print(f"Response from API is_success : {is_success}")
+       write_to_log(log_record_file, f"post_jsonfile_to_api Response from API is_success : {is_success}")
        if not is_success:
           write_to_error(error_record_file, f'File {eachFile} was not transferred and errored out with {str(response.text)}')
+          
        return is_success
     else:
        # Parse the JSON string
@@ -70,6 +75,7 @@ def post_jsonfile_to_api(target_api_url, access_token, json_file):
        # Extract the value of the "IsSuccess" key
        is_success = response_dict["IsSuccess"]
        print(f"Response from API is_success : {is_success}")
+       write_to_log(log_record_file, f"post_jsonfile_to_api Response from API is_success : {is_success}\n")
        if not is_success:
           write_to_error(error_record_file, f"File {eachFile} was not transferred and errored out with {str(response.text)}")
        return is_success
@@ -84,6 +90,18 @@ def write_to_error(error_file, message):
     with open(error_file, 'a') as error:
         error.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {message}\n")
 
+
+def write_posted_records_to_csv(records, posted_records_file):
+    try:
+        with open(posted_records_file, 'w', newline='') as csvfile:
+            csv_writer = csv.writer(csvfile)
+            for record in records:
+                csv_writer.writerow([record])
+                print(f"{record} was successfully written to the CSV file")
+        print(f"All posted records written to {posted_records_file}")
+    except Exception as e:
+        print(f"An error occurred while writing posted records : {e}")
+        
 
 if __name__ == "__main__":
     # Read the configuration
@@ -115,6 +133,10 @@ if __name__ == "__main__":
     
     timestamp = time.strftime('%Y-%m-%d_%H-%M-%S')
     
+    # Creating the log file path to so that it be read
+    log_file_name = "log_records.txt"
+    log_record_file = os.path.join(log_file_path, log_file_name)
+    
     # Creating the error file path to so that it be read
     error_file_name = "error_records.txt"
     error_record_file = os.path.join(error_file_path, error_file_name)
@@ -131,22 +153,30 @@ if __name__ == "__main__":
                 for each in lines:
                     posted_records.append(each.strip())
         else:
-            print(f"File {posted_records_file} doesn't exists") 
-            write_to_error(error_record_file, f"File {posted_records_file} doesn't exists")
+            print(f"File {posted_records_file} doesn't exists. Makse sure the script Hosp_0_Init_Cleanup.py is executed successfully") 
+            write_to_error(error_record_file, f"File {posted_records_file} doesn't exists. Makse sure the script Hosp_0_Init_Cleanup.py is executed successfully")
     except Exception as e:
         print(f"An error occurred: {e}")
 
        
     #Get the list of all json files that need to be posted
-    json_files = [file for file in os.listdir(json_file_path) if file.endswith('.json')]
+    try:
+        json_files = [file for file in os.listdir(json_file_path) if file.endswith('.json')]
+        if not json_files:
+            raise ValueError("The JSON json_files list is empty.")
+    except Exception as e:
+        print(f"An error occurred while processing CSV data: {e}")
     
+
     for eachFile in json_files:
         print(f"\nFile {eachFile} is in progress to be posted")
+        write_to_log(log_record_file, f"\nInside main for loop : File {eachFile} is in progress to be posted")
         full_file_path = os.path.join(json_file_path, eachFile)
         if eachFile not in posted_records:
             with open(full_file_path, 'r') as file:
                 json_data = json.load(file)
                 access_token = get_access_token(api_auth_url,api_loginname,api_password)
+                write_to_log(log_record_file, "Inside main for loop : Successfully generated access token {access_token}\n")
                 start_time = time.time()
                 
                 # Post the current file with the current access token
@@ -171,24 +201,28 @@ if __name__ == "__main__":
                     
                     if not success:
                         print(f"File {eachFile} not transferred even after token regeneration.")
-                        #write_to_log(log_file, f"Failed to transfer file: {eachFile}")
+                        write_to_log(log_record_file, f"Inside main for loop :  Failed to transfer file: {eachFile}")
                     else:
-                        posted_records.add(eachFile)
+                        posted_records.append(eachFile.strip())
                         print(f"File {eachFile} not transferred even after token regeneration.\n")
-                        #write_to_log(log_file, f"Successfully transferred file: {eachFile}")
+                        write_to_log(log_record_file, f"Inside main for loop :  Successfully transferred/ added to posted records file: {eachFile}")
                 elif elapsed_time < 55 and success:
-                    posted_records.add(eachFile)
+                    posted_records.append(eachFile.strip())
                     print(f"File transferred within 60 seconds.")
                 else:
+                    print("Inside else function")
                     print(f"File was not transferred and errored out with {success}")
-                    print("I'm here")
                     write_to_error(error_record_file, f"File {eachFile} was not transferred and errored out with {success}")
         else:
-             print("File as already processed")         
+             print("File was already processed")
+      
     
     
-    for eachrecord in posted_records:
-        print(f"{eachrecord} was successfully posted")
+    print("Records that were successfully uploaded to the API are written in the posted_record.txt")
+    write_posted_records_to_csv(posted_records,posted_records_file)
+    
+    print("Program completed successfully")
+    
     
     
   

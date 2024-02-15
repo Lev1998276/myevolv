@@ -46,12 +46,20 @@ if __name__ == "__main__":
     #Creating  posted file  
     #timestamp = time.strftime('%Y-%m-%d_%H-%M-%S')
     posted_file_name = f"posted_records.txt"
-    print(f"Creating an empty file posted_records to store the records that were successfully posted\n")
+    print(f"Creating an empty file posted_records to store the records that were successfully posted")
     create_empty_file(posted_file_path, posted_file_name)
 
 
     #Creating  error file  
     #timestamp = time.strftime('%Y-%m-%d_%H-%M-%S')
     error_file_name = f"error_records.txt"
-    print(f"Creating an empty file error_records to store the records errored out\n")
+    print(f"\nCreating an empty file error_records to store the records errored out")
     create_empty_file(error_file_path, error_file_name)
+    
+    
+    #Creating  log file  
+    #timestamp = time.strftime('%Y-%m-%d_%H-%M-%S')
+    log_file_name = f"log_records.txt"
+    print(f"\nCreating an empty file error_records to store the records errored out")
+    create_empty_file(log_file_path, log_file_name)
+
