@@ -4,6 +4,7 @@ import boto3
 import os
 import time
 import configparser
+import csv 
 
 
 
@@ -185,21 +186,17 @@ if __name__ == "__main__":
                 json_data = json.load(file)
                 
                 access_token = get_access_token(api_auth_url,api_loginname,api_password)
-                
                 print(f"Access token inside for loop : {access_token}")
                 
                 start_time = time.time()
-                
                 # Post the current file with the current access token
                 success = post_jsonfile_to_api(api_target_url, access_token, json_data)
                 elapsed_time = time.time() - start_time
+                
                 print(f"Success : {success}")
-                
-                
-                elapsed_time = time.time() - start_time
                 print(f"elapsed_time : {elapsed_time}")
                 # Check if the file was transferred within 55 seconds
-                if elapsed_time > 55:
+                if elapsed_time > 60:
                     print(f"Elapsed_time {elapsed_time} : Token expired or file not transferred within 60 seconds. Regenerating token\n")
                     time.sleep(30)
                     
@@ -215,10 +212,12 @@ if __name__ == "__main__":
                         write_to_log(log_record_file, f"Inside for loop : Failed to transfer file: {eachFile}")
                     else:
                         posted_records.append(eachFile)
+                        write_posted_records_to_csv(posted_records,posted_records_file)
                         print(f"File {eachFile} not transferred even after token regeneration.\n")
                         write_to_log(log_record_file, f"Inside for loop : Successfully transferred/ added to posted records file: {eachFile}")
-                elif elapsed_time < 55 and success:
+                elif elapsed_time < 60 and success:
                     posted_records.append(eachFile)
+                    write_posted_records_to_csv(posted_records,posted_records_file)
                     print(f"Inside for loop : File {eachFile} transferred within 60 seconds.")
                 else:
                     print("Inside else function")
@@ -229,7 +228,7 @@ if __name__ == "__main__":
     
     
     print("Records that were successfully uploaded to the API are written in the posted_record.txt")
-    write_posted_records_to_csv(posted_records,posted_records_file)
+    #write_posted_records_to_csv(posted_records,posted_records_file)
     
     print("Program completed successfully")
     
