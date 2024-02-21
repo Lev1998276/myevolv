@@ -102,7 +102,7 @@ def get_json_data(conn):
         else:
             print("Query was executed successfully")
     except Exception as e:
-        print('Error getting data from query: {}'.format(e))
+        print('def def get_json_data Error getting data from query: {}'.format(e))
         exit(1)
     return  result
     
@@ -122,7 +122,7 @@ def write_tuples_to_csv(data, file_path, header=None):
             csv_writer.writerows(data)
         print(f'The data has been written to {full_file_path}')
     except Exception as e:
-        print(f'Error writing to CSV: {e}')
+        print(f'def write_tuples_to_csv Error writing to CSV: {e}')
 
 
 
@@ -130,14 +130,17 @@ def read_csv(file_path):
     csv_data = []
     filename = 'hospitalization.csv'
     full_file_path = os.path.join(file_path, filename)
-    with open(full_file_path, 'r') as csv_file:
-        csv_reader = csv.reader(csv_file)
-        # Get the header from the first row
-        header = next(csv_reader)
-        # Iterate through rows and create dictionaries
-        for row in csv_reader:
-            row_dict = {header[i]: value for i, value in enumerate(row)}
-            csv_data.append(row_dict)
+    try:
+        with open(full_file_path, 'r') as csv_file:
+            csv_reader = csv.reader(csv_file)
+            # Get the header from the first row
+            header = next(csv_reader)
+            # Iterate through rows and create dictionaries
+            for row in csv_reader:
+                row_dict = {header[i]: value for i, value in enumerate(row)}
+                csv_data.append(row_dict)
+    except Exception as e:
+        print(f"def read_csv Error reading CSV file: {e}")
     return csv_data
 
 

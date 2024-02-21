@@ -4,13 +4,17 @@ import boto3
 import os
 import time
 import configparser
+import csv 
 
 
 
 def read_config(file_path='config.ini'):
-    config = configparser.ConfigParser()
-    config.read(file_path)
-    return config
+    try:
+        config = configparser.ConfigParser()
+        config.read(file_path)
+        return config
+    except Exception as e:
+        print(f"An error occurred while reading the configuration file: {e}")
     
     
 def get_access_token(api_url, loginname, password):
@@ -19,29 +23,35 @@ def get_access_token(api_url, loginname, password):
         "password": password
     }
     response = requests.post(api_url, json=credentials)
+    write_to_log(log_record_file, f" def get_access_token Response : {response}")
     try:
         response.raise_for_status()
         content_type = response.headers.get('content-type')
         if 'application/json' in content_type:
             access_token = response.json().get('access_token')
-            write_to_log(log_record_file, f"get_access_token access_token  : {access_token}")
+            write_to_log(log_record_file, f"def get_access_token access_token  : {access_token}")
             return access_token
         elif 'text/plain' in content_type:
             text_response = response.text
-            write_to_log(log_record_file, f"get_access_token text_response  : {text_response}")
+            write_to_log(log_record_file, f"def get_access_token  text_response : {text_response}")
             return text_response  # Return the text_response here
         else:
             print(f"Unexpected content type: {content_type}. Unable to handle response.")
             return None
     except requests.exceptions.HTTPError as errh:
         print(f"HTTP Error: {errh}")
+        write_to_log(log_record_file, f" def get_access_token Response : {errh}")
     except requests.exceptions.ConnectionError as errc:
         print(f"Error Connecting: {errc}")
+        write_to_log(log_record_file, f" def get_access_token Response : {errc}")
     except requests.exceptions.Timeout as errt:
         print(f"Timeout Error: {errt}")
+        write_to_log(log_record_file, f" def get_access_token Response : {errt}")
     except requests.exceptions.RequestException as err:
         print(f"Request Exception: {err}")
+        write_to_log(log_record_file, f" def get_access_token Response : {err}")
     print(f"Authentication failed. Status code: {response.status_code}")
+    write_to_log(log_record_file, f"def get_access_token Authentication failed. Status code: {response.status_code}")
     return None
     
  
@@ -55,7 +65,7 @@ def post_jsonfile_to_api(target_api_url, access_token, json_file):
     }
     #print(headers)
     response = requests.post(target_api_url, headers=headers, json=json_file)
-    write_to_log(log_record_file, f"post_jsonfile_to_api Response status : {response.status_code}")
+    write_to_log(log_record_file, f" def post_jsonfile_to_api Response status : {response.status_code}")
     
     print(f"Response from API : {str(response.text)}")
     if response.status_code == 200:
@@ -64,7 +74,7 @@ def post_jsonfile_to_api(target_api_url, access_token, json_file):
        # Extract the value of the "IsSuccess" key
        is_success = response_dict["IsSuccess"]
        print(f"Response from API is_success : {is_success}")
-       write_to_log(log_record_file, f"post_jsonfile_to_api Response from API is_success : {is_success}")
+       write_to_log(log_record_file, f"def post_jsonfile_to_api Response from API is_success : {is_success}")
        if not is_success:
           write_to_error(error_record_file, f'File {eachFile} was not transferred and errored out with {str(response.text)}')
           
@@ -75,20 +85,27 @@ def post_jsonfile_to_api(target_api_url, access_token, json_file):
        # Extract the value of the "IsSuccess" key
        is_success = response_dict["IsSuccess"]
        print(f"Response from API is_success : {is_success}")
-       write_to_log(log_record_file, f"post_jsonfile_to_api Response from API is_success : {is_success}\n")
+       write_to_log(log_record_file, f"def post_jsonfile_to_api Response from API is_success : {is_success}\n")
        if not is_success:
-          write_to_error(error_record_file, f"File {eachFile} was not transferred and errored out with {str(response.text)}")
+          write_to_error(error_record_file, f"def post_jsonfile_to_api Response File {eachFile} was not transferred and errored out with {str(response.text)}")
        return is_success
     
     
 def write_to_log(log_file, message):
-    with open(log_file, 'a') as log:
-        log.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {message}\n")
+    try:
+        with open(log_file, 'a') as log:
+            log.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {message}\n")
+    except Exception as e:
+        print(f" def write_to_log An error occurred while writing log records : {e}")
 
 
 def write_to_error(error_file, message):
-    with open(error_file, 'a') as error:
-        error.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {message}\n")
+    try:
+        with open(error_file, 'a') as error:
+            error.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {message}\n")
+    except Exception as e:
+        print(f" def write_to_error An error occurred while writing error records : {e}")
+        
 
 
 def write_posted_records_to_csv(records, posted_records_file):
@@ -204,10 +221,12 @@ if __name__ == "__main__":
                         write_to_log(log_record_file, f"Inside main for loop :  Failed to transfer file: {eachFile}")
                     else:
                         posted_records.append(eachFile.strip())
+                        write_posted_records_to_csv(posted_records,posted_records_file)
                         print(f"File {eachFile} not transferred even after token regeneration.\n")
                         write_to_log(log_record_file, f"Inside main for loop :  Successfully transferred/ added to posted records file: {eachFile}")
                 elif elapsed_time < 55 and success:
                     posted_records.append(eachFile.strip())
+                    write_posted_records_to_csv(posted_records,posted_records_file)
                     print(f"File transferred within 60 seconds.")
                 else:
                     print("Inside else function")
@@ -219,7 +238,7 @@ if __name__ == "__main__":
     
     
     print("Records that were successfully uploaded to the API are written in the posted_record.txt")
-    write_posted_records_to_csv(posted_records,posted_records_file)
+    #write_posted_records_to_csv(posted_records,posted_records_file)
     
     print("Program completed successfully")
     
