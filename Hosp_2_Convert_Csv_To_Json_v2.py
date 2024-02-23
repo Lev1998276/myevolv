@@ -85,6 +85,8 @@ if __name__ == "__main__":
     csv_file_path = config.get('Hospitalization', 'csv_file_path')
     json_file_path = config.get('Hospitalization', 'json_file_path')
 
+    print(f"csv_file_path from config_file : {csv_file_path}")
+    print(f"json_file_path from config_file: {json_file_path}")
 
     csv_file_name = 'hospitalization.csv'
     csv_file_ec2 = os.path.join(csv_file_path, csv_file_name)
