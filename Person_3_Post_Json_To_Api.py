@@ -195,7 +195,7 @@ if __name__ == "__main__":
                 
                 print(f"Success : {success}")
                 print(f"elapsed_time : {elapsed_time}")
-                # Check if the file was transferred within 55 seconds
+                # Check if the file was transferred within 60 seconds
                 if elapsed_time > 60:
                     print(f"Elapsed_time {elapsed_time} : Token expired or file not transferred within 60 seconds. Regenerating token\n")
                     time.sleep(30)
@@ -218,16 +218,19 @@ if __name__ == "__main__":
                 elif elapsed_time < 60 and success:
                     posted_records.append(eachFile)
                     write_posted_records_to_csv(posted_records,posted_records_file)
+                    write_to_log(log_record_file, f"\nInside for loop : File {eachFile} transferred within 60 seconds.")
                     print(f"Inside for loop : File {eachFile} transferred within 60 seconds.")
                 else:
                     print("Inside else function")
                     print(f"Inside for loop :  File was not transferred and errored out with {success}")
+                    write_to_log(log_record_file, f"File {eachFile} was not transferred and errored out with {success}")
                     write_to_error(error_record_file, f"File {eachFile} was not transferred and errored out with {success}")
         else:
-             print("File as already processed")         
+             print(f'File {eachFile}  was already posted')
+             write_to_log(log_record_file, f'File {eachFile}  was already posted')             
     
     
-    print("Records that were successfully uploaded to the API are written in the posted_record.txt")
+    print("\nRecords that were successfully uploaded to the API are written in the posted_record.txt")
     #write_posted_records_to_csv(posted_records,posted_records_file)
     
     print("Program completed successfully")
